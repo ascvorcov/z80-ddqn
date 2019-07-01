@@ -4,11 +4,12 @@ import ctypes
 import cv2
 from collections import deque
 from image_viewer import SimpleImageViewer
+from z80wrapper import Z80Wrapper
 
 ########################################################################
 class Emulator():
     def __init__(self, path):
-        self.z80 = ctypes.cdll.LoadLibrary('z80native.dll')
+        self.z80 = Z80Wrapper(path)
         self.context = self.z80.CreateContext()
         self.path = path
         self.buflen = 352 * 312

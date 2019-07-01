@@ -1,9 +1,12 @@
 import os.path
 import numpy as np
-import ctypes
 import cv2
 from collections import deque
 from image_viewer import SimpleImageViewer
+from z80wrapper import Z80Wrapper
+from ctypes import CDLL, POINTER, c_int, c_byte, c_void_p, cast
+
+FRAME_SIZE = 84
 
 ########################################################################
 class Key:
@@ -52,16 +55,16 @@ class Key:
 ########################################################################
 class Emulator():
     def __init__(self, path):
-        self.z80 = ctypes.cdll.LoadLibrary('z80native.dll')
+        self.z80 = Z80Wrapper(path)
         self.context = self.z80.CreateContext()
         self.path = path
         self.buflen = 352 * 312
-        self.screen_buffer = (ctypes.c_byte * self.buflen)()
-        self.screen_buffer_ptr = ctypes.cast(self.screen_buffer, ctypes.POINTER(ctypes.c_byte))
+        self.screen_buffer = (c_byte * self.buflen)()
+        self.screen_buffer_ptr = cast(self.screen_buffer, POINTER(c_byte))
 
         file_data = self.readfrom(self.path)
-        self.rom = (ctypes.c_byte * len(file_data)).from_buffer(file_data)
-        self.rom_ptr = ctypes.cast(self.rom, ctypes.POINTER(ctypes.c_byte))
+        self.rom = (c_byte * len(file_data)).from_buffer(file_data)
+        self.rom_ptr = cast(self.rom, POINTER(c_byte))
 
     def __del__(self):
         self.z80.DestroyContext(self.context)
@@ -95,55 +98,33 @@ class Emulator():
 
 ########################################################################
 class Frame():
-    def __init__(self, arr):
-        self.arr = arr
+    def __init__(self, frames):
+        self._frames = frames
 
     def __array__(self, dtype=None):
-        out = np.frombuffer(self.arr, dtype=np.uint8)
-        out = np.reshape(out, (4, 84, 84)).astype(np.float32) / 252.0
-
+        out = np.concatenate(self._frames, axis=0).reshape(4,FRAME_SIZE,FRAME_SIZE)
         if dtype is not None:
             out = out.astype(dtype)
         return out
 
     @staticmethod
-    @profile
     def Downsample(frame):
         # expected frame size is 352x312 (including border).
         if len(frame) != 352*312: raise Exception('Unexpected size')
-
-        # grayscale conversion lookup table from color index
-        lookup = [0,6,16,22,31,37,47,53,0,7,19,26,37,44,56,63]
-        LeftBorder = 48
-        TopBorder = 55
-        LineSize = 352
-        destination = bytearray(84*84)
-        view = memoryview(destination)
-        scanline = view[:] # todo: pack two 16-color bytes into one
-        destinationIndex = 0
-        for y in range(84*2):
-            if (y % 2) == 0 and y > 0:
-                destinationIndex = destinationIndex + 84
-                scanline = view[destinationIndex:]
-            
-            offset = ((y + TopBorder) * LineSize) + LeftBorder + 44
-            for x in range(84):# each cell is an average of 4 adjacent cells (2x2), max value is 252
-                scanline[x] += lookup[frame[offset + 0]] + lookup[frame[offset + 1]]
-                offset += 2
-                    
-        return destination
+        img = np.frombuffer(frame, dtype=np.uint8).reshape(312,352)
+        img = img[64:-56,80:-80] # cut part of img 192x192
+        img = cv2.resize(img*16, (FRAME_SIZE,FRAME_SIZE), interpolation=cv2.INTER_AREA) # resize with interpolation and reshape
+        return bytearray(img.swapaxes(0,1))
 
     def Join(*argv):
-        result = bytearray(0)
-        for arr in argv:
-            result += arr
-        return Frame(result)
+        lst = [x for x in argv]
+        return Frame(lst)
 
 ########################################################################
 class MainGymWrapper():
     def __init__(self, name):
         self.name = name
-        if name == 'RiverRaid':
+        if name == 'Riverraid':
             self.env = RiverRaidEnv()
         elif name == 'R-Type':
             self.env = RTypeEnv()
@@ -155,7 +136,7 @@ class MainGymWrapper():
         return self.env.action_space
 
     def reset(self):
-        self.env.reset()
+        return self.env.reset()
 
     def render(self):
         return self.env.render()
@@ -200,8 +181,9 @@ class RiverRaidEnv():
         if self.latestFrame == None: return
         if self.viewer == None:
             self.viewer = SimpleImageViewer()
-        arr = np.moveaxis(np.asarray(self.latestFrame), 0, 2)
-        self.viewer.imshow((arr * 255.0).astype(np.uint8))
+        frame = np.asarray(self.latestFrame)
+        arr = np.swapaxes(frame, 0, 2)
+        self.viewer.imshow(arr.astype(np.uint8))
 
     def step(self, action):
         emu = self.emu

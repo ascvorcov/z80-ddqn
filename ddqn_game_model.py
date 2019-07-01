@@ -10,9 +10,9 @@ GAMMA = 0.99
 MEMORY_SIZE = 900000
 BATCH_SIZE = 32
 TRAINING_FREQUENCY = 4
-TARGET_NETWORK_UPDATE_FREQUENCY = 40000
-MODEL_PERSISTENCE_UPDATE_FREQUENCY = 10000
-REPLAY_START_SIZE = 50000
+TARGET_NETWORK_UPDATE_FREQUENCY = 4000
+MODEL_PERSISTENCE_UPDATE_FREQUENCY = 1000
+REPLAY_START_SIZE = 5000
 
 EXPLORATION_MAX = 1.0
 EXPLORATION_MIN = 0.1
@@ -121,7 +121,7 @@ class DDQNTrainer(DDQNGameModel):
         current_states = []
         q_values = []
         max_q_values = []
-
+        #print('batch starting:' + str(len(batch)))
         for entry in batch:
             current_state = np.expand_dims(np.asarray(entry["current_state"]).astype(np.float64), axis=0)
             current_states.append(current_state)
@@ -136,7 +136,7 @@ class DDQNTrainer(DDQNGameModel):
             q_values.append(q)
             max_q_values.append(np.max(q))
 
-        print("training..." + str(len(self.memory)))
+        #print("training..." + str(len(self.memory)))
         fit = self.ddqn.fit(np.asarray(current_states).squeeze(),
                             np.asarray(q_values).squeeze(),
                             batch_size=BATCH_SIZE,

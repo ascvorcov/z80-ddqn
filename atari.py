@@ -2,9 +2,10 @@ import argparse
 import numpy as np
 from ddqn_game_model import DDQNTrainer, DDQNSolver
 from gym_wrappers import MainGymWrapper
+from gym_wrappers import FRAME_SIZE
+from image_viewer import SimpleImageViewer
 
 FRAMES_IN_OBSERVATION = 4
-FRAME_SIZE = 84
 INPUT_SHAPE = (FRAMES_IN_OBSERVATION, FRAME_SIZE, FRAME_SIZE)
 
 
@@ -18,6 +19,9 @@ class Atari:
     def _main_loop(self, game_model, env, render, total_step_limit, total_run_limit, clip):
         run = 0
         total_step = 0
+        viewer = None
+        if render: viewer = SimpleImageViewer()
+
         while True:
             if total_run_limit is not None and run >= total_run_limit:
                 print ("Reached total run limit of: " + str(total_run_limit))
@@ -55,7 +59,7 @@ class Atari:
     def _args(self):
         parser = argparse.ArgumentParser()
         available_games = ['R-Type','RiverRaid','Exolon']
-        parser.add_argument("-g", "--game", help="Choose from available games: " + str(available_games) + ". Default is 'RiverRaid'.", default="RiverRaid")
+        parser.add_argument("-g", "--game", help="Choose from available games: " + str(available_games) + ". Default is 'Riverraid'.", default="Riverraid")
         parser.add_argument("-m", "--mode", help="Choose from available modes: ddqn_train, ddqn_test, ge_train, ge_test. Default is 'ddqn_training'.", default="ddqn_training")
         parser.add_argument("-r", "--render", help="Choose if the game should be rendered. Default is 'False'.", default=False, type=bool)
         parser.add_argument("-tsl", "--total_step_limit", help="Choose how many total steps (frames visible by agent) should be performed. Default is '5000000'.", default=5000000, type=int)
