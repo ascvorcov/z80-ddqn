@@ -2,14 +2,13 @@ import argparse
 import numpy as np
 from ddqn_game_model import DDQNTrainer, DDQNSolver
 from gym_wrappers import MainGymWrapper
-from gym_wrappers import FRAME_SIZE
-from image_viewer import SimpleImageViewer
+from frame import FRAME_SIZE
 
 FRAMES_IN_OBSERVATION = 4
 INPUT_SHAPE = (FRAMES_IN_OBSERVATION, FRAME_SIZE, FRAME_SIZE)
 
 
-class Atari:
+class Main:
 
     def __init__(self):
         game_name, game_mode, render, total_step_limit, total_run_limit, clip = self._args()
@@ -20,7 +19,6 @@ class Atari:
         run = 0
         total_step = 0
         viewer = None
-        if render: viewer = SimpleImageViewer()
 
         while True:
             if total_run_limit is not None and run >= total_run_limit:
@@ -44,7 +42,7 @@ class Atari:
                 action = game_model.move(current_state)
                 next_state, reward, terminal = env.step(action)
                 if clip:
-                    np.sign(reward)
+                    reward = np.sign(reward)
                 score += reward
                 game_model.remember(current_state, action, reward, next_state, terminal)
                 current_state = next_state
@@ -91,4 +89,4 @@ class Atari:
 
 
 if __name__ == "__main__":
-    Atari()
+    Main()

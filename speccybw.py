@@ -51,26 +51,9 @@ class Emulator():
         self.z80.LoadZ80Format(self.context, self.rom_ptr, len(self.rom));
 
 ########################################################################
-emu = Emulator('./roms/riverraid.z80')
+emu = Emulator('./roms/zynaps.z80')
 emu.Reset()
 viewer = SimpleImageViewer() #expects HWC image
-colors = [
-      [0,0,0],
-      [0,0,0xD7],
-      [0xD7,0,0],
-      [0xD7,0,0xD7],
-      [0,0xD7,0],
-      [0,0xD7,0xD7],
-      [0xD7,0xD7,0],
-      [0xD7,0xD7,0xD7],
-      [0,0,0],
-      [0,0,0xFF],
-      [0xFF,0,0],
-      [0xFF,0,0xFF],
-      [0,0xFF,0],
-      [0,0xFF,0xFF],
-      [0xFF,0xFF,0],
-      [0xFF,0xFF,0xFF]]
 
 screen = bytearray(312 * 352 * 3)
 step = 0
@@ -85,7 +68,7 @@ while True:
     emu.KeyUp(0x701)
   frame = np.frombuffer(emu.NextFrame(), dtype=np.uint8).reshape(312,352)
   img = frame[64:-56,80:-80] # cut part of img 192x192
-  #img = palette(img).reshape(192,192,1) # remap palette and reshape
+  img = palette(img).reshape(192,192,1) # remap palette and reshape
   img = cv2.resize(img*16, (96, 96), interpolation=cv2.INTER_AREA).reshape(96,96,1) # resize with interpolation and reshape
   viewer.imshow(img)
   step += 1
