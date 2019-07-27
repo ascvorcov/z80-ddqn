@@ -126,16 +126,19 @@ class DDQNTrainer(DDQNGameModel):
             current_state = np.expand_dims(np.asarray(entry["current_state"]).astype(np.float64), axis=0)
             current_states.append(current_state)
             next_state = np.expand_dims(np.asarray(entry["next_state"]).astype(np.float64), axis=0)
-            target_predict = self.ddqn_target.predict(next_state)
-            next_state_prediction = target_predict.ravel()
+            next_state_prediction = self.ddqn_target.predict(next_state).ravel()
             next_q_value = np.max(next_state_prediction)
             self_predict = self.ddqn.predict(current_state);
             q = list(self_predict[0])
 
-            if entry["terminal"]:
-                q[entry["action"]] = entry["reward"]
+            reward = entry["reward"]
+            action = entry["action"]
+            isTerminal = entry["terminal"]
+
+            if isTerminal:
+                q[action] = reward
             else:
-                q[entry["action"]] = entry["reward"] + GAMMA * next_q_value
+                q[action] = reward + GAMMA * next_q_value
             q_values.append(q)
             max_q_values.append(np.max(q))
 

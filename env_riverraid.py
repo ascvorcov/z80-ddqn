@@ -4,6 +4,7 @@ from emulator import Key
 from emulator import Emulator
 from env_default import default_action 
 from env_default import default_render
+from env_default import default_reset
 
 ########################################################################
 class RiverRaidEnv():
@@ -16,14 +17,14 @@ class RiverRaidEnv():
         self.latestFrame = None
         self.viewer = None
         self.viewport = (70,-74,92,-92)
+        self.skip_frames = 2 
 
-
-    def reset(self):
+    def reset(self, skip=0):
         self.lives = 3
         self.score = 0
-        emu = self.emu
-        emu.Reset()
-        next_state = self.latestFrame = default_render(emu, self.viewport)
+        default_reset(self.emu, skip)
+        self.emu.KeyDown(Key.Space) # need to press fire to start
+        next_state = self.latestFrame = default_render(self.emu, self.viewport, self.skip_frames)
         return next_state
 
     def render(self, viewer):
@@ -35,8 +36,7 @@ class RiverRaidEnv():
     def step(self, action):
         emu = self.emu
         default_action(emu, action, (Key.D2, Key.W, Key.O, Key.P, Key.Space))
-
-        next_state = default_render(emu, self.viewport)
+        next_state = default_render(emu, self.viewport, self.skip_frames)
         reward = self.UpdateReward();
         terminal = self.UpdateLivesAndRewindIfPlayerDied();
         self.latestFrame = next_state
@@ -49,12 +49,8 @@ class RiverRaidEnv():
         self.lives = newLives;
 
         speed = emu.GetByte(0x5F64) # 0 - stopped/crashed, 1,2,4 - slow/normal/fast
-        if speed == 0: # player died, rewind death animation
-            if self.lives == 0: # terminal state
-                return True;
-
-            while emu.GetByte(0x5F69) != 4:
-                emu.NextFrame();
+        if speed == 0: # player died
+            return True; # do not count lives, consider death a terminal state
 
         return False;
 

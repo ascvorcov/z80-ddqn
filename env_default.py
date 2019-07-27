@@ -1,12 +1,25 @@
 from frame import Frame
 import numpy as np
 
-def default_render(emu, cut=None):
-    frame1 = Frame.Downsample(emu.NextFrame(), cut)
-    frame2 = Frame.Downsample(emu.NextFrame(), cut)
-    frame3 = Frame.Downsample(emu.NextFrame(), cut)
-    frame4 = Frame.Downsample(emu.NextFrame(), cut)
+def nextframe(emu, extra_frames_per_channel):
+    ret = emu.NextFrame()
+    while extra_frames_per_channel > 0:
+        emu.NextFrame()
+        extra_frames_per_channel = extra_frames_per_channel - 1
+    return ret
+
+def default_render(emu, cut=None, extra_frames_per_channel=0):
+    frame1 = Frame.Downsample(nextframe(emu, extra_frames_per_channel), cut)
+    frame2 = Frame.Downsample(nextframe(emu, extra_frames_per_channel), cut)
+    frame3 = Frame.Downsample(nextframe(emu, extra_frames_per_channel), cut)
+    frame4 = Frame.Downsample(nextframe(emu, extra_frames_per_channel), cut)
     return Frame.Join(frame1, frame2, frame3, frame4)
+
+def default_reset(emu, skip=0):
+    emu.Reset()
+    while skip > 0:
+        emu.NextFrame()
+        skip = skip - 1
 
 def default_action(emu, action, keys):
     u,d,l,r,f = keys

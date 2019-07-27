@@ -7,16 +7,16 @@ from env_default import default_render
 from env_default import default_reset
 
 ########################################################################
-class RenegadeEnv():
+class KrakoutEnv():
     def __init__(self):
-        self.action_space = 18
+        self.action_space = 5
         self.lives = 3
         self.score = 0
-        self.emu = Emulator('./roms/renegade.z80')
+        self.emu = Emulator('./roms/krakout.z80')
         self.latestFrame = None
         self.viewer = None
-        self.viewport = (50,-94,92,-92)
-        self.skip_frames = 2 
+        self.viewport = (84,-60,104,-80)
+        self.skip_frames = 0 
 
     def reset(self, skip=0):
         self.lives = 3
@@ -33,7 +33,26 @@ class RenegadeEnv():
 
     def step(self, action):
         emu = self.emu
-        default_action(emu, action, (Key.I, Key.K, Key.J, Key.L, Key.Q))
+        u,d,f = (Key.P, Key.L, Key.Space)
+
+        emu.KeyUp(u)
+        emu.KeyUp(d)
+        emu.KeyUp(f)
+        if   action == 0: 
+            pass
+        elif action == 1: #up
+            emu.KeyDown(u)
+        elif action == 2: #down
+            emu.KeyDown(d)
+        elif action == 3: #fire
+            emu.KeyDown(f)
+        elif action == 4: #upfire
+            emu.KeyDown(u)
+            emu.KeyDown(f)
+        elif action == 5: #downfire
+            emu.KeyDown(d)
+            emu.KeyDown(f)
+        else: raise Exception("Error")
 
         next_state = default_render(emu, self.viewport, self.skip_frames)
         reward = self.UpdateReward();
@@ -43,7 +62,7 @@ class RenegadeEnv():
 
     def UpdateLivesAndRewindIfPlayerDied(self):
         emu = self.emu
-        newLives = emu.GetByte(0x5B2F) - 1
+        newLives = emu.GetByte(0x8E9D)
         oldLives = self.lives;
         self.lives = newLives;
 
@@ -54,17 +73,11 @@ class RenegadeEnv():
 
     def UpdateReward(self):
         newScore = self.ReadScore()
-        if newScore == 0: return 0
+        if newScore <= 0: return 0
         reward = newScore - self.score
+        if reward < 0: return 0
         self.score = newScore
         return reward
 
     def ReadScore(self):
-        emu = self.emu
-        d1 = emu.GetByte(0x9E3D) - 0x30
-        d2 = emu.GetByte(0x9E3E) - 0x30
-        d3 = emu.GetByte(0x9E3F) - 0x30
-        d4 = emu.GetByte(0x9E40) - 0x30
-        d5 = emu.GetByte(0x9E41) - 0x30
-        d6 = emu.GetByte(0x9E42) - 0x30
-        return d1 * 100000 + d2 * 10000 + d3 * 1000 + d4 * 100 + d5 * 10 + d6
+        return 10 * (self.emu.GetByte(0x5B71) + (self.emu.GetByte(0x5B72) * 256))

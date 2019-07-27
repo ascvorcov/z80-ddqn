@@ -30,8 +30,8 @@ class Frame():
         img = np.frombuffer(frame, dtype=np.uint8).reshape(312,352,1)
 
         if cut != None:
-            l,r,u,d = cut
-            img = img[l:r,u:d] # cut center part of img
+            u,d,l,r = cut
+            img = img[u:d,l:r] # cut center part of img
 
         #img = cv2.resize(img, (FRAME_SIZE,FRAME_SIZE), interpolation=cv2.INTER_AREA )
         img = Frame.halve_image(img)

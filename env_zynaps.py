@@ -1,9 +1,11 @@
 import numpy as np
 
+from frame import Frame
 from emulator import Key
 from emulator import Emulator
 from env_default import default_action 
 from env_default import default_render
+from env_default import default_reset
 
 ########################################################################
 class ZynapsEnv():
@@ -15,13 +17,13 @@ class ZynapsEnv():
         self.latestFrame = None
         self.viewer = None
         self.viewport = (70,-74,62,-122)
+        self.skip_frames = 3 
 
-    def reset(self):
+    def reset(self, skip=0):
         self.lives = 3
         self.score = 0
-        emu = self.emu
-        emu.Reset()
-        next_state = self.latestFrame = default_render(emu, self.viewport)
+        default_reset(self.emu, skip)
+        next_state = self.latestFrame = default_render(self.emu, self.viewport, self.skip_frames)
         return next_state
 
     def render(self, viewer):
@@ -33,8 +35,7 @@ class ZynapsEnv():
     def step(self, action):
         emu = self.emu
         default_action(emu, action, (Key.W, Key.S, Key.X, Key.C, Key.Q))
-
-        next_state = default_render(emu, self.viewport)
+        next_state = default_render(emu, self.viewport, self.skip_frames)
         reward = self.UpdateReward();
         terminal = self.UpdateLivesAndRewindIfPlayerDied();
         self.latestFrame = next_state
