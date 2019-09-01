@@ -47,10 +47,12 @@ class RenegadeEnv():
         oldLives = self.lives;
         self.lives = newLives;
 
-        if self.lives == 0: # terminal state
-            return True;
+        if emu.GetByte(0xBF13) == 0x0F: # even more strict condition - consider knocked down as terminal
+            return True
+        if self.lives == 1: # consider loss of 1 life a terminal state
+            return True
 
-        return False;
+        return False
 
     def UpdateReward(self):
         newScore = self.ReadScore()

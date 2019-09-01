@@ -15,6 +15,9 @@ class Frame():
             out = out.astype(dtype)
         return out
 
+    def as_bytes(self):
+        return b"".join(self._frames)
+
     @staticmethod
     def halve_image(image) :
         rows, cols, planes = image.shape
@@ -37,6 +40,7 @@ class Frame():
         img = Frame.halve_image(img)
         return bytearray(img.swapaxes(0,1)*32)
 
+    @staticmethod
     def Join(*argv):
         lst = [x for x in argv]
         return Frame(lst)

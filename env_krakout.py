@@ -80,4 +80,12 @@ class KrakoutEnv():
         return reward
 
     def ReadScore(self):
-        return 10 * (self.emu.GetByte(0x5B71) + (self.emu.GetByte(0x5B72) * 256))
+        emu = self.emu
+        d1 = emu.GetByte(0xB676) - 0x30
+        d2 = emu.GetByte(0xB677) - 0x30
+        d3 = emu.GetByte(0xB678) - 0x30
+        d4 = emu.GetByte(0xB679) - 0x30
+        d5 = emu.GetByte(0xB67A) - 0x30
+        d6 = emu.GetByte(0xB67B) - 0x30
+        d7 = emu.GetByte(0xB67C) - 0x30
+        return d1 * 1000000 + d2 * 100000 + d3 * 10000 + d4 * 1000 + d5 * 100 + d6 * 10 + d7

@@ -1,3 +1,4 @@
+import keyboard
 import time
 import argparse
 import numpy as np
@@ -8,18 +9,19 @@ from frame import FRAME_SIZE
 FRAMES_IN_OBSERVATION = 4
 INPUT_SHAPE = (FRAMES_IN_OBSERVATION, FRAME_SIZE, FRAME_SIZE)
 
-
 class Main:
-
     def __init__(self):
         game_name, game_mode, render, total_step_limit, total_run_limit, clip, skip = self._args()
         env = MainGymWrapper(game_name, skip)
         self._main_loop(self._game_model(game_mode, game_name, env.action_space), env, render, total_step_limit, total_run_limit, clip)
 
     def _main_loop(self, game_model, env, render, total_step_limit, total_run_limit, clip):
-        run = 0
-        total_step = 0
+        run = game_model.initial_run
+        total_step = game_model.initial_total_step
         viewer = None
+
+        if run != 0:
+            print ("Continue from run " + str(run))
 
         while True:
             if total_run_limit is not None and run >= total_run_limit:
@@ -31,6 +33,11 @@ class Main:
             step = 0
             score = 0
             while True:
+                if keyboard.is_pressed("q"):
+                    print ("Quit button pressed, saving state")
+                    game_model.save(run, total_step)
+                    exit(0)
+
                 if total_step >= total_step_limit:
                     print ("Reached total step limit of: " + str(total_step_limit))
                     exit(0)
@@ -48,7 +55,6 @@ class Main:
                 game_model.remember(current_state, action, reward, next_state, terminal)
                 current_state = next_state
                 game_model.step_update(total_step)
-                time.sleep(1)
                 if terminal:
                     print('score:%d\tsteps:%d\ttotal:%d\trun:%d' % (score, step, total_step, run))
                     game_model.save_run(score, step, run)
@@ -89,7 +95,6 @@ class Main:
         else:
             print ("Unrecognized mode. Use --help")
             exit(1)
-
 
 if __name__ == "__main__":
     Main()

@@ -28,7 +28,7 @@ class MainGymWrapper():
         return self.env.action_space
 
     def reset(self):
-        return self.env.reset(np.random.randint(self.skip))
+        return self.env.reset(np.random.randint(self.skip) if self.skip > 0 else 0)
 
     def render(self):
         if self.viewer == None:

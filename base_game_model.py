@@ -13,6 +13,9 @@ class BaseGameModel:
         self.logger.add_step(step)
         self.logger.add_run(run)
 
+    def save(self, run, total_step):
+        pass
+
     def get_move(self, state):
         pass
 
