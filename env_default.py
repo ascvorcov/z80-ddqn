@@ -1,19 +1,59 @@
 from frame import Frame
+
 import numpy as np
 
+_colorbits = {
+      0:0x00000000 ,
+      1:0x00D70000 ,
+      2:0x000000D7 ,
+      3:0x00D700D7 ,
+      4:0x0000D700 ,
+      5:0x00D7D700 ,
+      6:0x0000D7D7 ,
+      7:0x00D7D7D7 ,
+      8:0x00000000 ,
+      9:0x00FF0000 ,
+     10:0x000000FF ,
+     11:0x00FF00FF ,
+     12:0x0000FF00 ,
+     13:0x00FFFF00 ,
+     14:0x0000FFFF ,
+     15:0x00FFFFFF }
+
+_palette = np.vectorize(_colorbits.get, otypes=[np.uint32])
+
 def nextframe(emu, extra_frames_per_channel):
-    ret = emu.NextFrame()
+    ret = bytearray(emu.NextFrame())
     while extra_frames_per_channel > 0:
         emu.NextFrame()
         extra_frames_per_channel = extra_frames_per_channel - 1
     return ret
 
-def default_render(emu, cut=None, extra_frames_per_channel=0):
-    frame1 = Frame.Downsample(nextframe(emu, extra_frames_per_channel), cut)
-    frame2 = Frame.Downsample(nextframe(emu, extra_frames_per_channel), cut)
-    frame3 = Frame.Downsample(nextframe(emu, extra_frames_per_channel), cut)
-    frame4 = Frame.Downsample(nextframe(emu, extra_frames_per_channel), cut)
-    return Frame.Join(frame1, frame2, frame3, frame4)
+def default_next_frame(emu, cut=None, extra_frames_per_channel=0):
+    raw1 = nextframe(emu, extra_frames_per_channel)
+    raw2 = nextframe(emu, extra_frames_per_channel)
+    raw3 = nextframe(emu, extra_frames_per_channel)
+    raw4 = nextframe(emu, extra_frames_per_channel)
+
+    frame1 = Frame.Downsample(raw1, cut)
+    frame2 = Frame.Downsample(raw2, cut)
+    frame3 = Frame.Downsample(raw3, cut)
+    frame4 = Frame.Downsample(raw4, cut)
+
+    next_state = Frame.Join(frame1, frame2, frame3, frame4)
+
+    return (raw1, next_state)
+
+def default_render(viewer, frame):
+    if frame == None: return
+
+    if isinstance(frame, Frame):
+        frame = np.asarray(frame)
+        arr = np.swapaxes(frame, 0, 2)
+        viewer.imshow(arr.astype(np.uint8))
+    else:
+        screen = np.frombuffer(_palette(frame).tobytes(), dtype=np.uint8)
+        viewer.imshow(np.reshape(screen, (312,352,4)))
 
 def default_reset(emu, skip=0):
     emu.Reset()

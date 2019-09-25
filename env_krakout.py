@@ -3,6 +3,7 @@ import numpy as np
 from emulator import Key
 from emulator import Emulator
 from env_default import default_action 
+from env_default import default_next_frame
 from env_default import default_render
 from env_default import default_reset
 
@@ -12,9 +13,9 @@ class KrakoutEnv():
         self.action_space = 5
         self.lives = 3
         self.score = 0
-        self.emu = Emulator('./roms/krakout.z80')
-        self.latestFrame = None
-        self.viewer = None
+        self.emu = Emulator("./roms/krakout.z80")
+        self.latest_frame = None
+        self.next_state = None
         self.viewport = (84,-60,104,-80)
         self.skip_frames = 0 
 
@@ -22,14 +23,11 @@ class KrakoutEnv():
         self.lives = 3
         self.score = 0
         default_reset(self.emu, skip)
-        next_state = self.latestFrame = default_render(self.emu, self.viewport, self.skip_frames)
-        return next_state
+        self.latest_frame, self.next_state = default_next_frame(self.emu, self.viewport, self.skip_frames)
+        return self.next_state
 
-    def render(self, viewer):
-        if self.latestFrame == None: return
-        frame = np.asarray(self.latestFrame)
-        arr = np.swapaxes(frame, 0, 2)
-        viewer.imshow(arr.astype(np.uint8))
+    def render(self, viewer, render_what="state"):
+        default_render(viewer, self.next_state if render_what == "state" else self.latest_frame)
 
     def step(self, action):
         emu = self.emu
@@ -54,17 +52,16 @@ class KrakoutEnv():
             emu.KeyDown(f)
         else: raise Exception("Error")
 
-        next_state = default_render(emu, self.viewport, self.skip_frames)
+        self.latest_frame, self.next_state = default_next_frame(emu, self.viewport, self.skip_frames)
         reward = self.UpdateReward();
         terminal = self.UpdateLivesAndRewindIfPlayerDied();
-        self.latestFrame = next_state
-        return (next_state, reward, terminal)
+        return (self.next_state, reward, terminal)
 
     def UpdateLivesAndRewindIfPlayerDied(self):
         emu = self.emu
-        newLives = emu.GetByte(0x8E9D)
-        oldLives = self.lives;
-        self.lives = newLives;
+        new_lives = emu.GetByte(0x8E9D)
+        old_lives = self.lives;
+        self.lives = new_lives;
 
         if self.lives == 0: # terminal state
             return True;
@@ -72,11 +69,11 @@ class KrakoutEnv():
         return False;
 
     def UpdateReward(self):
-        newScore = self.ReadScore()
-        if newScore <= 0: return 0
-        reward = newScore - self.score
+        new_score = self.ReadScore()
+        if new_score <= 0: return 0
+        reward = new_score - self.score
         if reward < 0: return 0
-        self.score = newScore
+        self.score = new_score
         return reward
 
     def ReadScore(self):

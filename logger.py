@@ -29,7 +29,7 @@ class Logger:
     def add_run(self, run):
         pass
         #if run % RUN_UPDATE_FREQUENCY == 0:
-        #    print('{{"metric": "run", "value": {}}}'.format(run))
+        #    print("{{"metric": "run", "value": {}}}".format(run))
 
     def add_score(self, score):
         self.score.add_entry(score)
@@ -63,7 +63,7 @@ class Stat:
         if len(self.values) % self.update_frequency == 0:
             mean_value = mean(self.values)
             #print(self.y_label + ": (min: " + str(min(self.values)) + ", avg: " + str(mean_value) + ", max: " + str(max(self.values)))
-            #print('{"metric": "' + self.y_label + '", "value": {}}}'.format(mean_value))
+            #print("{"metric": "" + self.y_label + "", "value": {}}}".format(mean_value))
             self._save_csv(self.directory_path + self.y_label + ".csv", mean_value)
             self._save_png(input_path=self.directory_path + self.y_label + ".csv",
                            output_path=self.directory_path + self.y_label + ".png",

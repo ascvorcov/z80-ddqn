@@ -4,6 +4,8 @@ import random
 import shutil
 import gzip
 import struct
+import time
+
 from statistics import mean
 from base_game_model import BaseGameModel
 from convolutional_neural_network import ConvolutionalNeuralNetwork
@@ -59,6 +61,7 @@ class DDQNSolver(DDQNGameModel):
                                testing_model_path)
 
     def move(self, state):
+        time.sleep(0.1)
         if np.random.rand() < EXPLORATION_TEST:
             return random.randrange(self.action_space)
         q_values = self.ddqn.predict(np.expand_dims(np.asarray(state).astype(np.float64), axis=0), batch_size=1)
@@ -84,14 +87,12 @@ class DDQNTrainer(DDQNGameModel):
     def _load_training_data(self):
         self.epsilon = EXPLORATION_MAX
         self.memory = []
-        self.initial_run = 0
-        self.initial_total_step = 0
-        self.struct_header = struct.Struct('IIIIIf')
-        self.struct_record = struct.Struct('IIIBB')
+        self.struct_header = struct.Struct("IIIIIf")
+        self.struct_record = struct.Struct("IIIBB")
         if not os.path.isfile(self.train_data_path):
             return
-        print('found training data in %s, loading' % (self.train_data_path,))
-        with gzip.open(self.train_data_path, 'rb') as f:
+        print("found training data in %s, loading" % (self.train_data_path,))
+        with gzip.open(self.train_data_path, "rb") as f:
             hdr = f.read(self.struct_header.size)
             frame_count, mem_count, img_size, ir, its, eps = self.struct_header.unpack_from(hdr)
             self.initial_run = ir
@@ -102,21 +103,21 @@ class DDQNTrainer(DDQNGameModel):
             all_frames = []
             for i in range(frame_count):
                 if i % 1000 == 0:
-                    print('loaded %d frames out of %d' % (i, frame_count))
+                    print("loaded %d frames out of %d" % (i, frame_count))
                 data = bytearray(f.read(img_size))
                 all_frames.append(Frame([data]))
-            print('loaded %d frames' % (frame_count,))
+            print("loaded %d frames" % (frame_count,))
 
             # load records into memory, reference frames in list by index
             recsz = self.struct_record.size
             for i in range(mem_count):
                 if i % 1000 == 0:
-                    print('loaded %d records out of %d' % (i, mem_count))
+                    print("loaded %d records out of %d" % (i, mem_count))
                 ics,ins,rw,ac,t = self.struct_record.unpack_from(f.read(recsz))
                 cs = all_frames[ics]
                 ns = all_frames[ins]
                 self.remember(cs,ac,rw,ns,True if t == 1 else False)
-            print('loaded %d records' % (mem_count,))
+            print("loaded %d records" % (mem_count,))
             all_frames = None
 
     def save(self, run, total_step):
@@ -127,41 +128,41 @@ class DDQNTrainer(DDQNGameModel):
                 os.remove(self.train_data_path + ".bak")
             os.rename(self.train_data_path, self.train_data_path + ".bak")
 
-        img_size = len(self.memory[0]['current_state'].as_bytes())
-        with gzip.open(self.train_data_path, 'wb') as f:
+        img_size = len(self.memory[0]["current_state"].as_bytes())
+        with gzip.open(self.train_data_path, "wb") as f:
             all_frames = {}
             mem_count = len(self.memory)
 
             # first count and index all unique frames
-            print('indexing frame data')
+            print("indexing frame data")
             for r in self.memory:
-                cs = r['current_state']
-                ns = r['next_state']
+                cs = r["current_state"]
+                ns = r["next_state"]
                 if cs not in all_frames: all_frames[cs] = cs.index = len(all_frames)
                 if ns not in all_frames: all_frames[ns] = ns.index = len(all_frames)
 
             # save all frames first, ordered by index
-            print('frame data indexing complete, saving frames')
+            print("frame data indexing complete, saving frames")
             frame_count = len(all_frames)
             f.write(self.struct_header.pack(frame_count,mem_count,img_size,run,total_step,self.epsilon))
             processed_records = 0
             for k in sorted(all_frames,key=lambda x: x.index):
                 if processed_records%1000==0:
-                    print('saved %d records out of %d' % (processed_records, frame_count))
+                    print("saved %d records out of %d" % (processed_records, frame_count))
                 f.write(k.as_bytes()) 
                 processed_records = processed_records+1
 
             # now save all memory records with frame index instead of real frame
-            print('saved %d frames, now saving %d transitions' % (frame_count, mem_count))
+            print("saved %d frames, now saving %d transitions" % (frame_count, mem_count))
             for i in range(mem_count): 
                 record = self.memory[i]
-                cs = record['current_state']
-                ns = record['next_state']
-                ac = record['action']
-                rw = record['reward']
-                t = 1 if record['terminal'] else 0
+                cs = record["current_state"]
+                ns = record["next_state"]
+                ac = record["action"]
+                rw = record["reward"]
+                t = 1 if record["terminal"] else 0
                 f.write(self.struct_record.pack(cs.index,ns.index,rw,ac,t))
-            print('saved %d transitions' % (mem_count,))
+            print("saved %d transitions" % (mem_count,))
 
     def move(self, state):
         if np.random.rand() < self.epsilon or len(self.memory) < REPLAY_START_SIZE:
@@ -196,8 +197,8 @@ class DDQNTrainer(DDQNGameModel):
 
         if total_step % TARGET_NETWORK_UPDATE_FREQUENCY == 0:
             self._reset_target_network()
-            print('{{"metric": "epsilon", "value": {}}}'.format(self.epsilon))
-            print('{{"metric": "total_step", "value": {}}}'.format(total_step))
+            print("{{'metric': 'epsilon', 'value': {}}}".format(self.epsilon))
+            print("{{'metric': 'total_step', 'value': {}}}".format(total_step))
 
     def _train(self):
         batch = np.asarray(random.sample(self.memory, BATCH_SIZE))
@@ -207,7 +208,7 @@ class DDQNTrainer(DDQNGameModel):
         current_states = []
         q_values = []
         max_q_values = []
-        #print('batch starting:' + str(len(batch)))
+        #print("batch starting:" + str(len(batch)))
         for entry in batch:
             current_state = np.expand_dims(np.asarray(entry["current_state"]).astype(np.float64), axis=0)
             current_states.append(current_state)

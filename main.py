@@ -44,8 +44,8 @@ class Main:
                 total_step += 1
                 step += 1
 
-                if render:
-                    env.render()
+                if render != 0:
+                    env.render("image" if render == 1 else "state")
 
                 action = game_model.move(current_state)
                 next_state, reward, terminal = env.step(action)
@@ -56,16 +56,16 @@ class Main:
                 current_state = next_state
                 game_model.step_update(total_step)
                 if terminal:
-                    print('score:%d\tsteps:%d\ttotal:%d\trun:%d' % (score, step, total_step, run))
+                    print("score:%d\tsteps:%d\ttotal:%d\trun:%d" % (score, step, total_step, run))
                     game_model.save_run(score, step, run)
                     break
 
     def _args(self):
         parser = argparse.ArgumentParser()
-        available_games = ['Krakout','Riverraid','Renegade','Zynaps']
+        available_games = ["Krakout","Riverraid","Renegade","Zynaps"]
         parser.add_argument("-g", "--game", help="Choose from available games: " + str(available_games) + ". Default is 'Riverraid'.", default="Riverraid")
         parser.add_argument("-m", "--mode", help="Choose from available modes: ddqn_train, ddqn_test. Default is 'ddqn_train'.", default="ddqn_train")
-        parser.add_argument("-r", "--render", help="Choose if the game should be rendered. Default is 'False'.", default=False, type=bool)
+        parser.add_argument("-r", "--render", help="Choose if the game should be rendered. Default is 0 - do not render, 1 - normal render, 2 - network vision render", default=0, type=int)
         parser.add_argument("-tsl", "--total_step_limit", help="Choose how many total steps (frames visible by agent) should be performed. Default is '5000000'.", default=5000000, type=int)
         parser.add_argument("-trl", "--total_run_limit", help="Choose after how many runs we should stop. Default is None (no limit).", default=None, type=int)
         parser.add_argument("-c", "--clip", help="Choose whether we should clip rewards to (0, 1) range. Default is 'False'", default=False, type=bool)
@@ -80,7 +80,7 @@ class Main:
         skip = args.skip
         print ("Selected game: " + str(game_name))
         print ("Selected mode: " + str(game_mode))
-        print ("Should render: " + str(render))
+        print ("Render mode: " + str(render))
         print ("Should clip: " + str(clip))
         print ("Should skip frames: " + str(skip))
         print ("Total step limit: " + str(total_step_limit))

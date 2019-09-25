@@ -68,15 +68,15 @@ class Emulator():
         self.z80.DestroyContext(self.context)
 
     def readfrom(self, s):
-        if not os.path.exists(s): raise Exception('cannot open file %s' % s)
-        fh = open(s, 'rb')
+        if not os.path.exists(s): raise Exception("cannot open file %s" % s)
+        fh = open(s, "rb")
         ret = bytearray(fh.read())
         fh.close()
         return ret
 
-    def NextFrame(self):
+    def NextFrame(self): # note that returned screen buffer is overwritten on next call
         r = self.z80.RenderFrame(self.context, self.screen_buffer_ptr, self.buflen)
-        if r != 0: raise Exception('render failed')
+        if r != 0: raise Exception("render failed")
         return self.screen_buffer
 
     def KeyUp(self, key):

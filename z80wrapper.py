@@ -2,7 +2,7 @@ from ctypes import CDLL, POINTER, c_int, c_byte, c_void_p, cast
 
 class Z80Wrapper:
     def __init__(self, path):
-        dll = CDLL('z80native.dll')
+        dll = CDLL("z80native.dll")
         self.CreateContext = dll.CreateContext
         self.CreateContext.restype = c_void_p
 

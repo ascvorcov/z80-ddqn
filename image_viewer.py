@@ -34,7 +34,7 @@ class SimpleImageViewer(object):
 
         assert len(arr.shape) == 3, "You passed in an image with the wrong shape"
         assert arr.shape[2] < 5 and arr.shape[2] > 0, "You passed in an image with the wrong number of channels"
-        formats = ['L','LA','RGB','RGBA']
+        formats = ["L","LA","RGB","RGBA"]
         format = formats[arr.shape[2]-1]
         image = pyglet.image.ImageData(arr.shape[1], arr.shape[0], 
             format, arr.tobytes(), pitch=arr.shape[1]*-arr.shape[2])
@@ -49,7 +49,7 @@ class SimpleImageViewer(object):
         self.window.flip()
     def close(self):
         if self.isopen and sys.meta_path:
-            # ^^^ check sys.meta_path to avoid 'ImportError: sys.meta_path is None, Python is likely shutting down'
+            # ^^^ check sys.meta_path to avoid "ImportError: sys.meta_path is None, Python is likely shutting down"
             self.window.close()
             self.isopen = False
 

@@ -24,15 +24,15 @@ class Emulator():
         self.z80.DestroyContext(self.context)
 
     def readfrom(self, s):
-        if not os.path.exists(s): raise Exception('cannot open file %s' % s)
-        fh = open(s, 'rb')
+        if not os.path.exists(s): raise Exception("cannot open file %s" % s)
+        fh = open(s, "rb")
         ret = bytearray(fh.read())
         fh.close()
         return ret
 
     def NextFrame(self):
         r = self.z80.RenderFrame(self.context, self.screen_buffer_ptr, self.buflen)
-        if r != 0: raise Exception('render failed')
+        if r != 0: raise Exception("render failed")
         return self.screen_buffer
 
     def KeyUp(self, key):
@@ -51,7 +51,7 @@ class Emulator():
         self.z80.LoadZ80Format(self.context, self.rom_ptr, len(self.rom));
 
 ########################################################################
-emu = Emulator('./roms/zynaps.z80')
+emu = Emulator("./roms/zynaps.z80")
 emu.Reset()
 viewer = SimpleImageViewer() #expects HWC image
 

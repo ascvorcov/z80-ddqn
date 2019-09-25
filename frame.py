@@ -21,15 +21,15 @@ class Frame():
     @staticmethod
     def halve_image(image) :
         rows, cols, planes = image.shape
-        image = image.astype('uint16')
+        image = image.astype("uint16")
         image = image.reshape(rows // 2, 2, cols // 2, 2, planes)
         image = image.sum(axis=3).sum(axis=1)
-        return ((image + 2) >> 2).astype('uint8')
+        return ((image + 2) >> 2).astype("uint8")
 
     @staticmethod
     def Downsample(frame, cut=None):
         # expected frame size is 352x312 (including border).
-        if len(frame) != 352*312: raise Exception('Unexpected size')
+        if len(frame) != 352*312: raise Exception("Unexpected size")
         img = np.frombuffer(frame, dtype=np.uint8).reshape(312,352,1)
 
         if cut != None:

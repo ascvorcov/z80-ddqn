@@ -14,13 +14,13 @@ class MainGymWrapper():
         self.name = name
         self.skip = skip
         self.viewer = None
-        if name == 'Riverraid':
+        if name == "Riverraid":
             self.env = RiverRaidEnv()
-        elif name == 'Zynaps':
+        elif name == "Zynaps":
             self.env = ZynapsEnv()
-        elif name == 'Renegade':
+        elif name == "Renegade":
             self.env = RenegadeEnv()
-        elif name == 'Krakout':
+        elif name == "Krakout":
             self.env = KrakoutEnv()
 
     @property
@@ -30,10 +30,10 @@ class MainGymWrapper():
     def reset(self):
         return self.env.reset(np.random.randint(self.skip) if self.skip > 0 else 0)
 
-    def render(self):
+    def render(self, render_what="state"):
         if self.viewer == None:
             self.viewer = SimpleImageViewer()
-        return self.env.render(self.viewer)
+        return self.env.render(self.viewer, render_what)
 
     def step(self, action):
         return self.env.step(action)
