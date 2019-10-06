@@ -63,7 +63,7 @@ class DDQNSolver(DDQNGameModel):
                                testing_model_path)
 
     def move(self, state):
-        time.sleep(0.2)
+        #time.sleep(0.2)
         if np.random.rand() < EXPLORATION_TEST:
             return random.randrange(self.action_space)
         x = np.expand_dims(np.asarray(state).astype(np.float64), axis=0)

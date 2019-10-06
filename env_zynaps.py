@@ -4,7 +4,6 @@ from emulator import Key
 from emulator import Emulator
 from env_default import default_action 
 from env_default import default_next_frame
-from env_default import default_render
 from env_default import default_reset
 
 ########################################################################
@@ -19,15 +18,15 @@ class ZynapsEnv():
         self.viewport = (70,-74,62,-122)
         self.skip_frames = 1
 
-    def reset(self, render_mode, skip=0):
+    def reset(self, skip=0):
         self.lives = 3
         self.score = 0
-        default_reset(self.emu, render_mode, skip)
+        default_reset(self.emu, skip)
         self.latest_frame, self.next_state = default_next_frame(self.emu, self.viewport, self.skip_frames, filter_image=False)
         return self.next_state
 
-    def render(self, viewer, render_mode):
-        default_render(viewer, render_mode, self.next_state, self.latest_frame)
+    def render(self, renderer):
+        renderer.render(self.next_state, self.latest_frame)
 
     def step(self, action):
         emu = self.emu

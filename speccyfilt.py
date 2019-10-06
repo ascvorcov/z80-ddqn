@@ -101,7 +101,9 @@ while True:
     emu.KeyUp(0x201)
   frame = emu.NextFrame()
   zz = np.frombuffer(palette(frame).tobytes(), dtype=np.uint8).reshape(312,352,4)
-  zz = halve_image(gray(zz)).reshape(156,176,1)
+  zz = zz[70:-74,62:-122]
+  zz = halve_image(gray(zz)).reshape(84,84,1)#.reshape(156,176,1)
+
   zz = ndimage.median_filter(zz, (2,2,1))
   viewer.imshow(zz)
   step += 1
