@@ -5,6 +5,7 @@ import shutil
 import gzip
 import struct
 import time
+import cv2
 
 from statistics import mean
 from base_game_model import BaseGameModel
@@ -37,6 +38,7 @@ class DDQNGameModel(BaseGameModel):
         self.model_path = model_path
         self.train_data_path = train_data_path
         self.ddqn = ConvolutionalNeuralNetwork(self.input_shape, action_space).model
+        self.ddqn.summary()
         if os.path.isfile(self.model_path):
             self.ddqn.load_weights(self.model_path)
         if not os.path.exists(os.path.dirname(self.model_path)):
@@ -48,10 +50,10 @@ class DDQNGameModel(BaseGameModel):
 
 class DDQNSolver(DDQNGameModel):
 
-    def __init__(self, game_name, input_shape, action_space):
+    def __init__(self, game_name, input_shape, action_space, model_name):
         logging_path       = "./output/" + game_name + "/testing/log/" + self._get_date() + "/"
-        testing_model_path = "./output/" + game_name + "/testing/model.h5"
-        assert os.path.exists(os.path.dirname(testing_model_path)), "No testing model in: " + str(testing_model_path)
+        testing_model_path = "./output/" + game_name + "/testing/" + model_name + ".h5"
+        assert os.path.exists(testing_model_path), "No testing model found: " + str(testing_model_path)
         DDQNGameModel.__init__(self,
                                game_name,
                                "DDQN testing",
@@ -61,23 +63,25 @@ class DDQNSolver(DDQNGameModel):
                                testing_model_path)
 
     def move(self, state):
-        time.sleep(0.1)
+        time.sleep(0.2)
         if np.random.rand() < EXPLORATION_TEST:
             return random.randrange(self.action_space)
-        q_values = self.ddqn.predict(np.expand_dims(np.asarray(state).astype(np.float64), axis=0), batch_size=1)
+        x = np.expand_dims(np.asarray(state).astype(np.float64), axis=0)
+        q_values = self.ddqn.predict(x, batch_size=1)
+
         return np.argmax(q_values[0])
 
 
 class DDQNTrainer(DDQNGameModel):
 
-    def __init__(self, game_name, input_shape, action_space):
+    def __init__(self, game_name, input_shape, action_space, model_name):
         DDQNGameModel.__init__(self,
                                game_name,
                                "DDQN training",
                                input_shape,
                                action_space,
                                "./output/" + game_name + "/training/log/" + self._get_date() + "/",
-                               "./output/" + game_name + "/training/model.h5",
+                               "./output/" + game_name + "/training/" + model_name + ".h5",
                                "./output/" + game_name + "/training/training_data.gz")
 
         self.ddqn_target = ConvolutionalNeuralNetwork(self.input_shape, action_space).model
@@ -103,7 +107,7 @@ class DDQNTrainer(DDQNGameModel):
             all_frames = []
             for i in range(frame_count):
                 if i % 1000 == 0:
-                    print("loaded %d frames out of %d" % (i, frame_count))
+                    print("loaded %d frames out of %d \r" % (i, frame_count), end = '')
                 data = bytearray(f.read(img_size))
                 all_frames.append(Frame([data]))
             print("loaded %d frames" % (frame_count,))
@@ -112,7 +116,7 @@ class DDQNTrainer(DDQNGameModel):
             recsz = self.struct_record.size
             for i in range(mem_count):
                 if i % 1000 == 0:
-                    print("loaded %d records out of %d" % (i, mem_count))
+                    print("loaded %d records out of %d \r" % (i, mem_count), end = '')
                 ics,ins,rw,ac,t = self.struct_record.unpack_from(f.read(recsz))
                 cs = all_frames[ics]
                 ns = all_frames[ins]
@@ -163,6 +167,7 @@ class DDQNTrainer(DDQNGameModel):
                 t = 1 if record["terminal"] else 0
                 f.write(self.struct_record.pack(cs.index,ns.index,rw,ac,t))
             print("saved %d transitions" % (mem_count,))
+            print("releasing memory (can take several minutes)...");
 
     def move(self, state):
         if np.random.rand() < self.epsilon or len(self.memory) < REPLAY_START_SIZE:

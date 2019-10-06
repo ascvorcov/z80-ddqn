@@ -4,7 +4,7 @@ import csv
 import numpy as np
 import shutil
 import matplotlib
-matplotlib.use("Agg")
+#matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 TRAINING_UPDATE_FREQUENCY = 1000

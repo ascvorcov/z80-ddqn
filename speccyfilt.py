@@ -1,53 +1,13 @@
 import os.path
 import numpy as np
+import matplotlib.pyplot as plt
+import imageio
+
+from scipy import ndimage
 from collections import deque
 from image_viewer import SimpleImageViewer
-from z80wrapper import Z80Wrapper
 from ctypes import CDLL, POINTER, c_int, c_byte, c_void_p, cast
-
-########################################################################
-class Key:
-    Empty = 0
-    Shift = 0x001
-    Z     = 0x002
-    X     = 0x004
-    C     = 0x008
-    V     = 0x010
-    A     = 0x101
-    S     = 0x102
-    D     = 0x104
-    F     = 0x108
-    G     = 0x110
-    Q     = 0x201
-    W     = 0x202
-    E     = 0x204
-    R     = 0x208
-    T     = 0x210
-    D1    = 0x301
-    D2    = 0x302
-    D3    = 0x304
-    D4    = 0x308
-    D5    = 0x310
-    D0    = 0x401
-    D9    = 0x402
-    D8    = 0x404
-    D7    = 0x408
-    D6    = 0x410
-    P     = 0x501
-    O     = 0x502
-    I     = 0x504
-    U     = 0x508
-    Y     = 0x510
-    Enter = 0x601
-    L     = 0x602
-    K     = 0x604
-    J     = 0x608
-    H     = 0x610
-    Space = 0x701
-    Sym   = 0x702
-    M     = 0x704
-    N     = 0x708
-    B     = 0x710
+from z80wrapper import Z80Wrapper
 
 ########################################################################
 class Emulator():
@@ -73,7 +33,7 @@ class Emulator():
         fh.close()
         return ret
 
-    def NextFrame(self): # note that returned screen buffer is overwritten on next call
+    def NextFrame(self):
         r = self.z80.RenderFrame(self.context, self.screen_buffer_ptr, self.buflen)
         if r != 0: raise Exception("render failed")
         return self.screen_buffer
@@ -92,3 +52,57 @@ class Emulator():
 
     def Reset(self):
         self.z80.LoadZ80Format(self.context, self.rom_ptr, len(self.rom));
+
+########################################################################
+def filt(x):
+  if np.count_nonzero(x) == 1: return 0
+  return x[4]
+
+def halve_image(image) :
+    rows, cols = image.shape
+    image = image.astype("uint16")
+    image = image.reshape(rows // 2, 2, cols // 2, 2)
+    image = image.sum(axis=3).sum(axis=1)
+    return ((image + 2) >> 2).astype("uint8")
+
+
+emu = Emulator("./roms/Zynaps.z80")
+emu.Reset()
+viewer = SimpleImageViewer() #expects HWC image
+colorbits = {
+      0:0x00000000 ,
+      1:0x00D70000 ,
+      2:0x000000D7 ,
+      3:0x00D700D7 ,
+      4:0x0000D700 ,
+      5:0x00D7D700 ,
+      6:0x0000D7D7 ,
+      7:0x00D7D7D7 ,
+      8:0x00000000 ,
+      9:0x00FF0000 ,
+     10:0x000000FF ,
+     11:0x00FF00FF ,
+     12:0x0000FF00 ,
+     13:0x00FFFF00 ,
+     14:0x0000FFFF ,
+     15:0x00FFFFFF }
+
+palette = np.vectorize(colorbits.get, otypes=[np.uint32])
+gray = lambda rgb : np.dot(rgb[... , :3] , [0.299 , 0.587, 0.114])
+
+a = np.full((5,5), 8, dtype=np.uint8)
+a[2,2] = 15
+
+step = 0
+while True:
+  if step % 4 == 0:
+    emu.KeyDown(0x201) 
+  else:
+    emu.KeyUp(0x201)
+  frame = emu.NextFrame()
+  zz = np.frombuffer(palette(frame).tobytes(), dtype=np.uint8).reshape(312,352,4)
+  zz = halve_image(gray(zz)).reshape(156,176,1)
+  zz = ndimage.median_filter(zz, (2,2,1))
+  viewer.imshow(zz)
+  step += 1
+

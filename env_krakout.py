@@ -19,15 +19,15 @@ class KrakoutEnv():
         self.viewport = (84,-60,104,-80)
         self.skip_frames = 0 
 
-    def reset(self, skip=0):
+    def reset(self, render_mode, skip=0):
         self.lives = 3
         self.score = 0
-        default_reset(self.emu, skip)
+        default_reset(self.emu, render_mode, skip)
         self.latest_frame, self.next_state = default_next_frame(self.emu, self.viewport, self.skip_frames)
         return self.next_state
 
-    def render(self, viewer, render_what="state"):
-        default_render(viewer, self.next_state if render_what == "state" else self.latest_frame)
+    def render(self, viewer, render_mode):
+        default_render(viewer, render_mode, self.next_state, self.latest_frame)
 
     def step(self, action):
         emu = self.emu

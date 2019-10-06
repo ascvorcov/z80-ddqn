@@ -2,6 +2,7 @@ from keras.optimizers import RMSprop
 from keras.models import Sequential
 from keras.layers import Conv2D, Flatten, Dense
 from keras import backend as K
+from keras.utils import plot_model
 
 def huber_loss(a, b):
     error = a - b

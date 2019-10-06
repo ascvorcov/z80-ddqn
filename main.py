@@ -11,11 +11,14 @@ INPUT_SHAPE = (FRAMES_IN_OBSERVATION, FRAME_SIZE, FRAME_SIZE)
 
 class Main:
     def __init__(self):
-        game_name, game_mode, render, total_step_limit, total_run_limit, clip, skip = self._args()
-        env = MainGymWrapper(game_name, skip)
-        self._main_loop(self._game_model(game_mode, game_name, env.action_space), env, render, total_step_limit, total_run_limit, clip)
+        game_name, game_mode, model_name, render, total_step_limit, total_run_limit, clip, skip = self._args()
 
-    def _main_loop(self, game_model, env, render, total_step_limit, total_run_limit, clip):
+        game_model = self._game_model(game_mode, model_name, game_name, env.action_space)
+        env = MainGymWrapper(game_name, render, skip)
+
+        self._main_loop(game_model, env, total_step_limit, total_run_limit, clip)
+
+    def _main_loop(self, game_model, env, total_step_limit, total_run_limit, clip):
         run = game_model.initial_run
         total_step = game_model.initial_total_step
         viewer = None
@@ -44,8 +47,7 @@ class Main:
                 total_step += 1
                 step += 1
 
-                if render != 0:
-                    env.render("image" if render == 1 else "state")
+                env.render()
 
                 action = game_model.move(current_state)
                 next_state, reward, terminal = env.step(action)
@@ -62,16 +64,18 @@ class Main:
 
     def _args(self):
         parser = argparse.ArgumentParser()
-        available_games = ["Krakout","Riverraid","Renegade","Zynaps"]
+        available_games = ["Krakout","Riverraid","Renegade","Zynaps","Barbarian"]
         parser.add_argument("-g", "--game", help="Choose from available games: " + str(available_games) + ". Default is 'Riverraid'.", default="Riverraid")
         parser.add_argument("-m", "--mode", help="Choose from available modes: ddqn_train, ddqn_test. Default is 'ddqn_train'.", default="ddqn_train")
-        parser.add_argument("-r", "--render", help="Choose if the game should be rendered. Default is 0 - do not render, 1 - normal render, 2 - network vision render", default=0, type=int)
+        parser.add_argument("-n", "--net", help="Network name to use for testing. Default is 'model'", default="model")
+        parser.add_argument("-r", "--render", help="Choose if the game should be rendered. Default is 0 - do not render, 1 - normal render, 2 - network vision render, 3 - gif file + normal", default=0, type=int)
         parser.add_argument("-tsl", "--total_step_limit", help="Choose how many total steps (frames visible by agent) should be performed. Default is '5000000'.", default=5000000, type=int)
         parser.add_argument("-trl", "--total_run_limit", help="Choose after how many runs we should stop. Default is None (no limit).", default=None, type=int)
         parser.add_argument("-c", "--clip", help="Choose whether we should clip rewards to (0, 1) range. Default is 'False'", default=False, type=bool)
         parser.add_argument("-s", "--skip", help="Max random number of frames to skip on reset. Default is 0", default=0, type=int)
         args = parser.parse_args()
         game_mode = args.mode
+        model_name = args.net
         game_name = args.game
         render = args.render
         total_step_limit = args.total_step_limit
@@ -80,18 +84,19 @@ class Main:
         skip = args.skip
         print ("Selected game: " + str(game_name))
         print ("Selected mode: " + str(game_mode))
+        print ("Model name: " + str(model_name))
         print ("Render mode: " + str(render))
         print ("Should clip: " + str(clip))
         print ("Should skip frames: " + str(skip))
         print ("Total step limit: " + str(total_step_limit))
         print ("Total run limit: " + str(total_run_limit))
-        return game_name, game_mode, render, total_step_limit, total_run_limit, clip, skip
+        return game_name, game_mode, model_name, render, total_step_limit, total_run_limit, clip, skip
 
-    def _game_model(self, game_mode,game_name, action_space):
+    def _game_model(self, game_mode, model_name, game_name, action_space):
         if game_mode == "ddqn_train":
-            return DDQNTrainer(game_name, INPUT_SHAPE, action_space)
+            return DDQNTrainer(game_name, INPUT_SHAPE, action_space, model_name)
         elif game_mode == "ddqn_test":
-            return DDQNSolver(game_name, INPUT_SHAPE, action_space)
+            return DDQNSolver(game_name, INPUT_SHAPE, action_space, model_name)
         else:
             print ("Unrecognized mode. Use --help")
             exit(1)

@@ -1,6 +1,5 @@
 import os.path
 import numpy as np
-import cv2
 from collections import deque
 from image_viewer import SimpleImageViewer
 from ctypes import CDLL, POINTER, c_int, c_byte, c_void_p, cast
@@ -51,7 +50,7 @@ class Emulator():
         self.z80.LoadZ80Format(self.context, self.rom_ptr, len(self.rom));
 
 ########################################################################
-emu = Emulator("./roms/Zynaps.z80")
+emu = Emulator("./roms/barbarian.z80")
 emu.Reset()
 viewer = SimpleImageViewer() #expects HWC image
 colorbits = {
