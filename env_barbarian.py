@@ -14,8 +14,8 @@ class BarbarianEnv():
         self.emu = Emulator("./roms/barbarian.z80")
         self.latest_frame = None
         self.next_state = None
-        self.viewport = (80,-64,82,-102)
-        self.skip_frames = 1
+        self.viewport = (80,-64,64,-120) #u,d,l,r
+        self.skip_frames = 2
 
     def reset(self, skip=0):
         self.score = 0
@@ -36,9 +36,13 @@ class BarbarianEnv():
 
     def UpdateLivesAndRewindIfPlayerDied(self):
         emu = self.emu
-        enemy_score = emu.GetByte(0xB97D)
+        enemy_score = emu.GetByte(0xB97E)
 
-        if enemy_score != 0: # enemy scored one hit - terminal state
+        if enemy_score > 0: # enemy scored one hit - terminal state
+            if self.score > 2000:
+                print('nice score!')
+                self.reset()
+                exit(0)
             return True;
 
         return False;

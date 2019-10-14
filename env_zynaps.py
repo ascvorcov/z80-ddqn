@@ -1,5 +1,6 @@
 import numpy as np
-
+import shutil
+import os
 from emulator import Key
 from emulator import Emulator
 from env_default import default_action 
@@ -42,7 +43,7 @@ class ZynapsEnv():
         old_lives = self.lives;
         self.lives = new_lives;
 
-        if self.lives == 2: # loss of 1 life - terminal state
+        if self.lives == 0: # loss of 1 life - terminal state
             return True;
 
         return False;

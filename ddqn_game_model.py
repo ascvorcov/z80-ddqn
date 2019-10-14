@@ -63,9 +63,9 @@ class DDQNSolver(DDQNGameModel):
                                testing_model_path)
 
     def move(self, state):
-        #time.sleep(0.2)
-        if np.random.rand() < EXPLORATION_TEST:
-            return random.randrange(self.action_space)
+        time.sleep(0.5)
+        #if np.random.rand() < EXPLORATION_TEST:
+        #    return random.randrange(self.action_space)
         x = np.expand_dims(np.asarray(state).astype(np.float64), axis=0)
         q_values = self.ddqn.predict(x, batch_size=1)
 
@@ -211,26 +211,34 @@ class DDQNTrainer(DDQNGameModel):
             return
 
         current_states = []
+        errors = []
         q_values = []
         max_q_values = []
         #print("batch starting:" + str(len(batch)))
         for entry in batch:
             current_state = np.expand_dims(np.asarray(entry["current_state"]).astype(np.float64), axis=0)
+            next_state    = np.expand_dims(np.asarray(entry["next_state"]   ).astype(np.float64), axis=0)
             current_states.append(current_state)
-            next_state = np.expand_dims(np.asarray(entry["next_state"]).astype(np.float64), axis=0)
             next_state_prediction = self.ddqn_target.predict(next_state).ravel()
+            self_predict          = self.ddqn.predict(current_state);
+
             next_q_value = np.max(next_state_prediction)
-            self_predict = self.ddqn.predict(current_state);
             q = list(self_predict[0])
 
             reward = entry["reward"]
             action = entry["action"]
             isTerminal = entry["terminal"]
 
+            discountedReward = 0
             if isTerminal:
-                q[action] = reward
+                discountedReward = reward
             else:
-                q[action] = reward + GAMMA * next_q_value
+                discountedReward = reward + GAMMA * next_q_value
+
+            err = abs(q[action] - discountedReward)
+            q[action] = discountedReward
+
+            errors.append(err)
             q_values.append(q)
             max_q_values.append(np.max(q))
 
@@ -241,6 +249,7 @@ class DDQNTrainer(DDQNGameModel):
                             verbose=0)
         loss = fit.history["loss"][0]
         accuracy = fit.history["acc"][0]
+        #memory.batch_update(tree_idx, absolute_errors) -- todo
         return loss, accuracy, mean(max_q_values)
 
     def _update_epsilon(self):
