@@ -1,6 +1,7 @@
 from sumtree import SumTree
 import random
 import struct
+import math
 
 class Memory:
 
@@ -32,7 +33,6 @@ class Memory:
 
         p_min = mp / self.tree.total_priority()
         max_weight = (n * p_min) ** -self.b
-
         for i in range(n):
             s = random.uniform(segment * i, segment * (i + 1))
             idx, p, data = self.tree.get(s)
@@ -44,6 +44,7 @@ class Memory:
 
     def update(self, idx, error):
         p = self._getPriority(error)
+        assert p > 0
         self.tree.update(idx, p)
 
     def save(self, f, datawriter):

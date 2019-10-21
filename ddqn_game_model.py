@@ -108,7 +108,7 @@ class DDQNTrainer(DDQNGameModel):
             all_frames = []
             for i in range(frame_count):
                 if i % 1000 == 0:
-                    print("loaded %d frames out of %d \r" % (i, frame_count), end = '')
+                    print("loaded %d frames out of %d \r" % (i, frame_count), end = "")
                 data = bytearray(f.read(img_size))
                 all_frames.append(Frame([data]))
             print("loaded %d frames" % (frame_count,))
@@ -118,7 +118,7 @@ class DDQNTrainer(DDQNGameModel):
 
             def _load_record(f):
                 if self.memory.size() % 1000 == 0:
-                    print("loaded %d records out of %d \r" % (i, mem_count), end = '')
+                    print("loaded %d records out of %d \r" % (i, mem_count), end = "")
                 ics,ins,rw,ac,t = self.struct_record.unpack_from(f.read(recsz))
                 cs = all_frames[ics]
                 ns = all_frames[ins]
@@ -162,7 +162,7 @@ class DDQNTrainer(DDQNGameModel):
             processed_records = 0
             for k in sorted(all_frames,key=lambda x: x.index):
                 if processed_records%1000==0:
-                    print("saved %d records out of %d" % (processed_records, frame_count))
+                    print("saved %d records out of %d \r" % (processed_records, frame_count), end = "")
                 f.write(k.as_bytes()) 
                 processed_records = processed_records+1
 
@@ -225,7 +225,6 @@ class DDQNTrainer(DDQNGameModel):
         sample_weights = []
         for idx, entry, weight in batch:
             sample_weights.append(weight)
-
             current_state = np.expand_dims(np.asarray(entry["current_state"]).astype(np.float64), axis=0)
             next_state    = np.expand_dims(np.asarray(entry["next_state"]   ).astype(np.float64), axis=0)
             current_states.append(current_state)

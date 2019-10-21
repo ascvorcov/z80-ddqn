@@ -53,7 +53,6 @@ class SumTree:
 
     def update(self, idx, p):
         change = p - self.tree[idx]
-
         self.tree[idx] = p
         self._propagate(idx, change)
 
