@@ -3,16 +3,7 @@ from keras.models import Sequential
 from keras.layers import Conv2D, Flatten, Dense
 from keras import backend as K
 from keras.utils import plot_model
-from keras.losses import huber_loss
-#from keras.utils import plot_model
-
-#def huber_loss(a, b):
-#    error = a - b
-#    quadratic_term = error*error / 2
-#    linear_term = abs(error) - 1/2
-#    use_linear_term = (abs(error) > 1.0)
-#    use_linear_term = K.cast(use_linear_term, "float32")
-#    return use_linear_term * linear_term + (1-use_linear_term) * quadratic_term
+from keras import backend as K
 
 class ConvolutionalNeuralNetwork:
 
@@ -42,7 +33,7 @@ class ConvolutionalNeuralNetwork:
         self.model.add(Flatten())
         self.model.add(Dense(512, activation="relu"))
         self.model.add(Dense(action_space))
-        self.model.compile(loss=huber_loss,
+        self.model.compile(loss='mse',
                            optimizer=RMSprop(lr=0.00025,
                                              rho=0.95,
                                              epsilon=0.01),

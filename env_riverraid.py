@@ -47,7 +47,6 @@ class RiverRaidEnv():
         speed = emu.GetByte(0x5F64) # 0 - stopped/crashed, 1,2,4 - slow/normal/fast
         if speed == 0: # player died
             return True; # do not count lives, consider death a terminal state
-
         return False;
 
     def UpdateReward(self):

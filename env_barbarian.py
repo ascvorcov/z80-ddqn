@@ -15,7 +15,7 @@ class BarbarianEnv():
         self.latest_frame = None
         self.next_state = None
         self.viewport = (80,-64,64,-120) #u,d,l,r
-        self.skip_frames = 2
+        self.skip_frames = 1
 
     def reset(self, skip=0):
         self.score = 0
@@ -38,13 +38,8 @@ class BarbarianEnv():
         emu = self.emu
         enemy_score = emu.GetByte(0xB97E)
 
-        if enemy_score > 0: # enemy scored one hit - terminal state
-            if self.score > 2000:
-                print('nice score!')
-                self.reset()
-                exit(0)
+        if enemy_score > 1: # enemy scored > 255 points - terminal state
             return True;
-
         return False;
 
     def UpdateReward(self):

@@ -5,7 +5,7 @@ from PIL import Image
 from sklearn.preprocessing import minmax_scale
 from keras.models import Model
 
-def features_heatmap(model, input_data, layer_name='conv2d_3', stack_by=8):
+def features_heatmap(model, input_data, layer_name, stack_by=8):
 
     cmap = mpl.cm.get_cmap('jet')
 
