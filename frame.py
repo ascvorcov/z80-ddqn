@@ -34,7 +34,14 @@ class Frame():
         img = np.frombuffer(frame, dtype=np.uint8).reshape(312,352)
 
         if cut != None:
-            u,d,l,r = cut
+            u = d = l = r = 0
+            if len(cut) == 4:
+                u,d,l,r = cut
+            elif len(cut) == 2:
+                u,l = cut
+                d = u+FRAME_SIZE*2
+                r = l+FRAME_SIZE*2
+
             img = img[u:d,l:r] # cut center part of img
 
         img = Frame.halve_image(img)

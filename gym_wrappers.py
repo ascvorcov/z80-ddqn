@@ -2,6 +2,7 @@ import os.path
 import numpy as np
 
 from env_riverraid import RiverRaidEnv
+from env_raiders import RaidersEnv
 from env_xecutor import XecutorEnv
 from env_renegade import RenegadeEnv
 from env_krakout import KrakoutEnv
@@ -14,6 +15,8 @@ class MainGymWrapper():
         self.skip = skip
         if name == "Riverraid":
             self.env = RiverRaidEnv()
+        if name == "Raiders":
+            self.env = RaidersEnv()
         elif name == "Xecutor":
             self.env = XecutorEnv()
         elif name == "Renegade":
