@@ -92,17 +92,19 @@ class DDQNTrainer(DDQNGameModel):
     def _load_training_data(self):
         self.epsilon = EXPLORATION_MAX
         self.memory = Memory(MEMORY_SIZE)
-        self.struct_header = struct.Struct("IIIIId")
+        self.max_reward = 1
+        self.struct_header = struct.Struct("IIIIIdd")
         self.struct_record = struct.Struct("IIIBB")
         if not os.path.isfile(self.train_data_path):
             return
         print("found training data in %s, loading" % (self.train_data_path,))
         with gzip.open(self.train_data_path, "rb") as f:
             hdr = f.read(self.struct_header.size)
-            frame_count, mem_count, img_size, ir, its, eps = self.struct_header.unpack_from(hdr)
+            frame_count, mem_count, img_size, ir, its, mrw, eps = self.struct_header.unpack_from(hdr)
             self.initial_run = ir
             self.initial_total_step = its
             self.epsilon = eps
+            self.max_reward = mrw
             
             # load frames into simple list
             all_frames = []
@@ -158,7 +160,7 @@ class DDQNTrainer(DDQNGameModel):
             print("frame data indexing complete, saving frames")
             frame_count = len(all_frames)
             img_size = len(next(iter(all_frames)).as_bytes())
-            f.write(self.struct_header.pack(frame_count,mem_count,img_size,run,total_step,self.epsilon))
+            f.write(self.struct_header.pack(frame_count,mem_count,img_size,run,total_step,self.max_reward,self.epsilon))
             processed_records = 0
             for k in sorted(all_frames,key=lambda x: x.index):
                 if processed_records%1000==0:
@@ -187,6 +189,8 @@ class DDQNTrainer(DDQNGameModel):
         return np.argmax(q_values[0])
 
     def remember(self, current_state, action, reward, next_state, terminal):
+        #reward scaling by max encountered
+        if reward > self.max_reward: self.max_reward = reward * 1.0
         data = {"current_state": current_state,
                 "action": action,
                 "reward": reward,
@@ -234,7 +238,7 @@ class DDQNTrainer(DDQNGameModel):
             next_q_value = np.max(next_state_prediction)
             q = list(self_predict[0])
 
-            reward = entry["reward"]
+            reward = entry["reward"] / self.max_reward
             action = entry["action"]
             isTerminal = entry["terminal"]
 

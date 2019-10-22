@@ -84,4 +84,4 @@ class KrakoutEnv():
         d5 = emu.GetByte(0xB67A) - 0x30
         d6 = emu.GetByte(0xB67B) - 0x30
         d7 = emu.GetByte(0xB67C) - 0x30
-        return d1 * 1000000 + d2 * 100000 + d3 * 10000 + d4 * 1000 + d5 * 100 + d6 * 10 + d7
+        return 10 * (d1 * 1000000 + d2 * 100000 + d3 * 10000 + d4 * 1000 + d5 * 100 + d6 * 10 + d7)
