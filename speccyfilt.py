@@ -66,7 +66,7 @@ def halve_image(image) :
     return ((image + 2) >> 2).astype("uint8")
 
 
-emu = Emulator("./roms/Zynaps.z80")
+emu = Emulator("./roms/xecutor.z80")
 emu.Reset()
 viewer = SimpleImageViewer() #expects HWC image
 colorbits = {

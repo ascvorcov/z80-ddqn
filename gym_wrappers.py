@@ -2,7 +2,7 @@ import os.path
 import numpy as np
 
 from env_riverraid import RiverRaidEnv
-from env_zynaps import ZynapsEnv
+from env_xecutor import XecutorEnv
 from env_renegade import RenegadeEnv
 from env_krakout import KrakoutEnv
 from env_barbarian import BarbarianEnv
@@ -14,8 +14,8 @@ class MainGymWrapper():
         self.skip = skip
         if name == "Riverraid":
             self.env = RiverRaidEnv()
-        elif name == "Zynaps":
-            self.env = ZynapsEnv()
+        elif name == "Xecutor":
+            self.env = XecutorEnv()
         elif name == "Renegade":
             self.env = RenegadeEnv()
         elif name == "Krakout":

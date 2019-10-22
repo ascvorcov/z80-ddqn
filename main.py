@@ -66,7 +66,7 @@ class Main:
 
     def _args(self):
         parser = argparse.ArgumentParser()
-        available_games = ["Krakout","Riverraid","Renegade","Zynaps","Barbarian"]
+        available_games = ["Krakout","Riverraid","Renegade","Xecutor","Barbarian"]
         parser.add_argument("-g", "--game", help="Choose from available games: " + str(available_games) + ". Default is 'Riverraid'.", default="Riverraid")
         parser.add_argument("-m", "--mode", help="Choose from available modes: ddqn_train, ddqn_test. Default is 'ddqn_train'.", default="ddqn_train")
         parser.add_argument("-n", "--net", help="Network name to use for testing. Default is 'model'", default="model")

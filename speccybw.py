@@ -51,7 +51,7 @@ class Emulator():
         self.z80.LoadZ80Format(self.context, self.rom_ptr, len(self.rom));
 
 ########################################################################
-emu = Emulator("./roms/zynaps.z80")
+emu = Emulator("./roms/xecutor.z80")
 emu.Reset()
 viewer = SimpleImageViewer() #expects HWC image
 

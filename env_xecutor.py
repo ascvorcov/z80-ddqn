@@ -8,12 +8,12 @@ from env_default import default_next_frame
 from env_default import default_reset
 
 ########################################################################
-class ZynapsEnv():
+class XecutorEnv():
     def __init__(self):
         self.action_space = 18
         self.lives = 3
         self.score = 0
-        self.emu = Emulator("./roms/zynaps.z80")
+        self.emu = Emulator("./roms/xecutor.z80")
         self.latest_frame = None
         self.next_state = None
         self.viewport = (70,-74,62,-122)
