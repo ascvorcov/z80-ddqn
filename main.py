@@ -12,14 +12,14 @@ INPUT_SHAPE = (FRAMES_IN_OBSERVATION, FRAME_SIZE, FRAME_SIZE)
 
 class Main:
     def __init__(self):
-        game_name, game_mode, model_name, render_mode, total_step_limit, total_run_limit, clip, skip = self._args()
+        game_name, game_mode, model_name, render_mode, total_step_limit, total_run_limit, skip, duel = self._args()
         env = MainGymWrapper(game_name, skip)
-        game_model = self._game_model(game_mode, model_name, game_name, env.action_space)
+        game_model = self._game_model(game_mode, model_name, game_name, env.action_space, duel)
         renderer = get_renderer(render_mode, game_model.ddqn)
 
-        self._main_loop(game_model, env, renderer, total_step_limit, total_run_limit, clip)
+        self._main_loop(game_model, env, renderer, total_step_limit, total_run_limit)
 
-    def _main_loop(self, game_model, env, renderer, total_step_limit, total_run_limit, clip):
+    def _main_loop(self, game_model, env, renderer, total_step_limit, total_run_limit):
         run = game_model.initial_run
         total_step = game_model.initial_total_step
         viewer = None
@@ -53,8 +53,6 @@ class Main:
 
                 action = game_model.move(current_state)
                 next_state, reward, terminal = env.step(action)
-                if clip:
-                    reward = np.sign(reward)
                 score += reward
                 game_model.remember(current_state, action, reward, next_state, terminal)
                 current_state = next_state
@@ -73,8 +71,8 @@ class Main:
         parser.add_argument("-r", "--render", help="Choose if the game should be rendered. Default is 0 - do not render, 1 - normal, 2 - network vision, 3 - gif file + normal, 4 - featuremap", default=0, type=int)
         parser.add_argument("-tsl", "--total_step_limit", help="Choose how many total steps (frames visible by agent) should be performed. Default is '5000000'.", default=5000000, type=int)
         parser.add_argument("-trl", "--total_run_limit", help="Choose after how many runs we should stop. Default is None (no limit).", default=None, type=int)
-        parser.add_argument("-c", "--clip", help="Choose whether we should clip rewards to (0, 1) range. Default is 'False'", default=False, type=bool)
         parser.add_argument("-s", "--skip", help="Max random number of frames to skip on reset. Default is 0", default=0, type=int)
+        parser.add_argument("-d", "--duel", help="Enable dueling network architecture. Disabled by default",  dest='duel', action='store_true')
         args = parser.parse_args()
         game_mode = args.mode
         model_name = args.net
@@ -82,23 +80,23 @@ class Main:
         render_mode = args.render
         total_step_limit = args.total_step_limit
         total_run_limit = args.total_run_limit
-        clip = args.clip
         skip = args.skip
+        duel = args.duel
         print ("Selected game: " + str(game_name))
         print ("Selected mode: " + str(game_mode))
         print ("Model name: " + str(model_name))
+        print ("Dueling net: " + str(duel))
         print ("Render mode: " + str(render_mode))
-        print ("Should clip: " + str(clip))
         print ("Should skip frames: " + str(skip))
         print ("Total step limit: " + str(total_step_limit))
         print ("Total run limit: " + str(total_run_limit))
-        return game_name, game_mode, model_name, render_mode, total_step_limit, total_run_limit, clip, skip
+        return game_name, game_mode, model_name, render_mode, total_step_limit, total_run_limit, skip, duel
 
-    def _game_model(self, game_mode, model_name, game_name, action_space):
+    def _game_model(self, game_mode, model_name, game_name, action_space, duel):
         if game_mode == "ddqn_train":
-            return DDQNTrainer(game_name, INPUT_SHAPE, action_space, model_name)
+            return DDQNTrainer(game_name, duel, INPUT_SHAPE, action_space, model_name)
         elif game_mode == "ddqn_test":
-            return DDQNSolver(game_name, INPUT_SHAPE, action_space, model_name)
+            return DDQNSolver(game_name, duel, INPUT_SHAPE, action_space, model_name)
         else:
             print ("Unrecognized mode. Use --help")
             exit(1)

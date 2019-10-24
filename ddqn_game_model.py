@@ -18,8 +18,8 @@ MEMORY_SIZE = 900000
 BATCH_SIZE = 32
 TRAINING_FREQUENCY = 4
 TARGET_NETWORK_UPDATE_FREQUENCY = 40000
-MODEL_PERSISTENCE_UPDATE_FREQUENCY = 10000
-REPLAY_START_SIZE = 50000
+MODEL_PERSISTENCE_UPDATE_FREQUENCY = 1000
+REPLAY_START_SIZE = 1000#50000
 
 EXPLORATION_MAX = 1.0
 EXPLORATION_MIN = 0.1
@@ -29,7 +29,7 @@ EXPLORATION_DECAY = (EXPLORATION_MAX-EXPLORATION_MIN)/EXPLORATION_STEPS
 
 class DDQNGameModel(BaseGameModel):
 
-    def __init__(self, game_name, mode_name, input_shape, action_space, logger_path, model_path, train_data_path=None):
+    def __init__(self, game_name, mode_name, duel, input_shape, action_space, logger_path, model_path, train_data_path=None):
         BaseGameModel.__init__(self, game_name,
                                mode_name,
                                logger_path,
@@ -38,33 +38,42 @@ class DDQNGameModel(BaseGameModel):
 
         self.model_path = model_path
         self.train_data_path = train_data_path
-        self.ddqn = ConvolutionalNeuralNetwork(self.input_shape, action_space).model
-        self.ddqn.summary()
+        self.ddqn = self.create_model(duel, input_shape, action_space)
+
         if os.path.isfile(self.model_path):
             self.ddqn.load_weights(self.model_path)
+
         if not os.path.exists(os.path.dirname(self.model_path)):
             os.makedirs(os.path.dirname(self.model_path))
+        self.ddqn.summary()
 
     def _save_model(self):
         self.ddqn.save_weights(self.model_path)
 
+    def create_model(self, duel, input_shape, action_space):
+        if duel:
+            return ConvolutionalNeuralNetwork.create_dueling(input_shape, action_space)
+        else:
+            return ConvolutionalNeuralNetwork.create_original(input_shape, action_space)
+
 
 class DDQNSolver(DDQNGameModel):
 
-    def __init__(self, game_name, input_shape, action_space, model_name):
+    def __init__(self, game_name, duel,  input_shape, action_space, model_name):
         logging_path       = "./output/" + game_name + "/testing/log/" + self._get_date() + "/"
         testing_model_path = "./output/" + game_name + "/testing/" + model_name + ".h5"
         assert os.path.exists(testing_model_path), "No testing model found: " + str(testing_model_path)
         DDQNGameModel.__init__(self,
                                game_name,
                                "DDQN testing",
+                               duel,
                                input_shape,
                                action_space,
                                logging_path,
                                testing_model_path)
 
     def move(self, state):
-        time.sleep(0.1)
+        #time.sleep(0.1)
         if np.random.rand() < EXPLORATION_TEST:
             return random.randrange(self.action_space)
         x = np.expand_dims(np.asarray(state).astype(np.float64), axis=0)
@@ -75,17 +84,18 @@ class DDQNSolver(DDQNGameModel):
 
 class DDQNTrainer(DDQNGameModel):
 
-    def __init__(self, game_name, input_shape, action_space, model_name):
+    def __init__(self, game_name, duel, input_shape, action_space, model_name):
         DDQNGameModel.__init__(self,
                                game_name,
                                "DDQN training",
+                               duel,
                                input_shape,
                                action_space,
                                "./output/" + game_name + "/training/log/" + self._get_date() + "/",
                                "./output/" + game_name + "/training/" + model_name + ".h5",
                                "./output/" + game_name + "/training/training_data.gz")
 
-        self.ddqn_target = ConvolutionalNeuralNetwork(self.input_shape, action_space).model
+        self.ddqn_target = self.create_model(duel, input_shape, action_space)
         self._reset_target_network()
         self._load_training_data()
 

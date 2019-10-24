@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib as mpl
+from matplotlib import pyplot as plt
 
 from PIL import Image
 from sklearn.preprocessing import minmax_scale
@@ -28,8 +29,8 @@ def features_heatmap(model, input_data, layer_name, stack_by=8):
     lst = []
     for i in range(features):
         hm = acts[:, :, i]
-        hm = Image.fromarray(hm, mode='L')
-        
+        hm = Image.fromarray(hm, mode='F')
+
         hm = hm.resize((width, height), Image.LANCZOS)
         hm = (cmap(np.array(hm)) * 255).astype(np.uint8)
         hm = Image.fromarray(hm, mode='RGBA')
