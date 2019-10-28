@@ -62,7 +62,7 @@ class KrakoutEnv():
         old_lives = self.lives;
         self.lives = new_lives;
 
-        if new_lives < old_lives: # terminal state
+        if new_lives == 0: # terminal state
             return True;
 
         return False;

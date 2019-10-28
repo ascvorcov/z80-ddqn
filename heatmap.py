@@ -36,7 +36,9 @@ def features_heatmap(model, input_data, layer_name, stack_by=8):
         hm = Image.fromarray(hm, mode='RGBA')
         
         blend = Image.blend(img, hm, alpha=0.5)
-        lst.append(np.array(blend))
+        arr = np.array(blend)
+        padded = np.pad(arr, [(1,1),(1,1),(0,0)], mode='constant')
+        lst.append(padded)
 
     final_img = np.vstack([np.hstack(lst[i:i+stack_by]) for i in range(0, len(lst), stack_by)])
     return final_img
