@@ -104,7 +104,7 @@ class GifRender(Renderer):
 
 ####################################
 class HeatmapRender(Renderer):
-  def __init__(self, model, layer_name="conv2d_1", stack_by=8):
+  def __init__(self, model, layer_name="conv2d_3", stack_by=8):
     self.model = model
     self.layer_name = layer_name
     self.stack_by = stack_by

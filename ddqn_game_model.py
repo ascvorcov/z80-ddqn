@@ -5,7 +5,6 @@ import shutil
 import gzip
 import struct
 import time
-import cv2
 
 from statistics import mean
 from base_game_model import BaseGameModel
@@ -19,7 +18,7 @@ BATCH_SIZE = 32
 TRAINING_FREQUENCY = 4
 TARGET_NETWORK_UPDATE_FREQUENCY = 40000
 MODEL_PERSISTENCE_UPDATE_FREQUENCY = 1000
-REPLAY_START_SIZE = 1000#50000
+REPLAY_START_SIZE = 50000
 
 EXPLORATION_MAX = 1.0
 EXPLORATION_MIN = 0.1
@@ -270,8 +269,10 @@ class DDQNTrainer(DDQNGameModel):
                             sample_weight = np.asarray(sample_weights),
                             batch_size = BATCH_SIZE,
                             verbose = 0)
-        loss = fit.history["loss"][0]
-        accuracy = fit.history["accuracy"][0]
+
+        h = fit.history
+        loss     = h["loss"    ][0] if "loss"     in h else 0
+        accuracy = h["accuracy"][0] if "accuracy" in h else (h["acc"][0] if "acc" in h else 0)
 
         return loss, accuracy, mean(max_q_values)
 
