@@ -104,21 +104,24 @@ class GifRender(Renderer):
 
 ####################################
 class HeatmapRender(Renderer):
-  def __init__(self, model, layer_name="conv2d_3", stack_by=8):
+  def __init__(self, model, layer_name="conv2d_1", stack_by=8):
     self.model = model
     self.layer_name = layer_name
     self.stack_by = stack_by
     self.viewer = SimpleImageViewer()
 
   def render(self, state, frame):
+    self.viewer.imshow(prepare(state, frame))
+
+  def prepare(self, state, frame):
     data = np.expand_dims(np.asarray(state).astype(np.float64), axis=0)
     hm = features_heatmap(self.model, data, self.layer_name, self.stack_by)
-    self.viewer.imshow(hm)
+    return hm
 
 def get_renderer(render_mode, model):
   if   render_mode == 0: return Renderer()
   elif render_mode == 1: return FrameRender()
   elif render_mode == 2: return StateRender()
   elif render_mode == 3: return CompositeRender([FrameRender(),GifRender(FrameRender()),GifRender(StateRender(),"./state.gif")])
-  elif render_mode == 4: return HeatmapRender(model)
+  elif render_mode == 4: return CompositeRender([HeatmapRender(model), GifRender(HeatmapRender(model), "./heatmap.gif")])
 
