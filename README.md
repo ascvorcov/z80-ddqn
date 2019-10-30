@@ -18,7 +18,7 @@ Model evaluates state image, suggests action, observes resulting reward and stat
 and repeats this loop until the end of the episode. End-of-episode condition is configured depending on environment.
 
 Convolution neural network architecture:
-![Architecture](https://github.com/ascvorcov/z80-ddqn/assets/model2.png "Model architecture")
+![Architecture](./assets/model2.png "Model architecture")
 
 *Loss* - loss function, determined from the difference between true and predicted q-value.
 Huber loss in our case - https://en.wikipedia.org/wiki/Huber_loss
