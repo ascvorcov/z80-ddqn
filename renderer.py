@@ -111,7 +111,7 @@ class HeatmapRender(Renderer):
     self.viewer = SimpleImageViewer()
 
   def render(self, state, frame):
-    self.viewer.imshow(prepare(state, frame))
+    self.viewer.imshow(self.prepare(state, frame))
 
   def prepare(self, state, frame):
     data = np.expand_dims(np.asarray(state).astype(np.float64), axis=0)

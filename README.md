@@ -77,6 +77,9 @@ human|10|19600|6145|4725|4746.604049
 </tr>
 </table>
 
+Activation heatmap for first convolutional layer of DDQN:
+[![Activation heatmap for first convolutional layer of DDQN](http://img.youtube.com/vi/gLpF19FDtSM/0.jpg)](http://www.youtube.com/watch?v=gLpF19FDtSM)
+
 ## Xecutor
 
 Model was training with condition "loss of one life = end of episode".
@@ -112,6 +115,9 @@ human|10|2050|1470|1575|481.433046
 <td><img src="/assets/xecutor_step.png"/></td>
 </tr>
 </table>
+
+Activation heatmap for first convolutional layer of DDQN:
+[![Activation heatmap for first convolutional layer of DDQN](http://img.youtube.com/vi/1iGw8KeiQwM/0.jpg)](http://www.youtube.com/watch?v=1iGw8KeiQwM)
 
 ## Barbarian
 
@@ -151,6 +157,9 @@ human|10|5150|1590|1375|1402.735423
 </tr>
 </table>
 
+Activation heatmap for first convolutional layer of DDQN:
+[![Activation heatmap for first convolutional layer of DDQN](http://img.youtube.com/vi/Py-aSZYm3Qs/0.jpg)](http://www.youtube.com/watch?v=Py-aSZYm3Qs)
+
 ## River raid
 
 Model was training with condition "loss of one life = end of episode", with frame skipping set to 2.
@@ -182,6 +191,9 @@ human|10|14150|6351|5285|4598.628902
 <td><img src="/assets/riverraid_step.png"/></td>
 </tr>
 </table>
+
+Activation heatmap for first convolutional layer of DDQN:
+[![Activation heatmap for first convolutional layer of DDQN](http://img.youtube.com/vi/MffK-BjuVpo/0.jpg)](http://www.youtube.com/watch?v=MffK-BjuVpo)
 
 ## Krakout
 
@@ -216,3 +228,6 @@ human|10|14880|5785|4060|4299.227967
 <td><img src="/assets/krakout_step.png"/></td>
 </tr>
 </table>
+
+Activation heatmap for first convolutional layer of DDQN:
+[![Activation heatmap for first convolutional layer of DDQN](http://img.youtube.com/vi/5nSFqYxiEvA/0.jpg)](http://www.youtube.com/watch?v=5nSFqYxiEvA)
