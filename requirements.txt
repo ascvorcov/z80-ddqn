@@ -62,7 +62,7 @@ six==1.11.0
 sklearn==0.0
 snakeviz==2.0.1
 tensorboard==2.0.0
-tensorflow==2.0.0
+tensorflow==2.0.3
 tensorflow-estimator==2.0.0
 tensorflow-gpu==1.9.0
 termcolor==1.1.0
